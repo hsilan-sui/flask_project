@@ -48,6 +48,8 @@ $ source web\_server/bin/activate # 在bin資料夾下有一個activate可執行
 (web_server) [~/flask_project]
 ```
 
+![執行虛擬環境](./images/activate-venv.png.png)
+
 ### 3.Install Flask
 
 ```bash
@@ -93,6 +95,8 @@ $ export FLASK_APP=server
 $ flask run
 ```
 
+![啟動伺服器](./images/server.png)
+
 #### Debug Mode
 
 - 在本地端運行伺服器時，可以看到訊息寫：
@@ -126,6 +130,8 @@ def blog2():
 
 ## Rendering Templates
 
+![render-template](./images/render-template.png)
+
 - To render a template,use the render_template() method
 
   - this render_template() allow me to send the HTML file
@@ -141,6 +147,8 @@ def blog2():
   /templates (templates資料夾＝>一定要創建)
     /index.html (想要渲染在瀏覽器的html內容)
 ```
+
+![建立templates檔案夾](./images/templates-dir.png)
 
 ```python
 @app.route("/aboutMe.html")
@@ -240,6 +248,8 @@ def hello(myname=None, post_id=None):
   <script src="static/script.js"></script>
 </body>
 ```
+
+![動態顯示](./images/dynmic.png)
 
 ## reference
 
