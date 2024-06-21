@@ -34,7 +34,7 @@ $ cd .. # 從web_server去到上ㄧ層 #Flask_project
 $ python3 -m venv web\_server/ # 在#Flask_project這裡指定虛擬環境的目錄名稱是 web_server => 要記得寫 web\_server/ ,"\_"代表後面這個下劃線的字元不能忽略 才能指定`web_server`資料夾為虛擬環境的目錄名稱
 ```
 
-![虛擬環境的目錄建置](https://myoctocat.com/assets/images/base-octocat.svg)
+![虛擬環境的目錄建置](./images/venv.png)
 
 ### 2. Activate the virtural environment
 
