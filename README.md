@@ -48,7 +48,7 @@ $ source web\_server/bin/activate # 在bin資料夾下有一個activate可執行
 (web_server) [~/flask_project]
 ```
 
-![執行虛擬環境](./images/activate-venv.png.png)
+![執行虛擬環境](./images/activate-venv.png)
 
 ### 3.Install Flask
 
