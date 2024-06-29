@@ -10,6 +10,11 @@ def home():
 def html_page(page_name): 
     return render_template(page_name)
 
+# 定義使用者提交表單的API端點 以及 收到表單資料後 要回傳給前端的內容
+@app.route('/submit_form', methods=['POST', 'GET'])
+def submit_form():
+    return '表單已成功提交到伺服器囉！'
+
 # @app.route('/about.html') 
 # def about(): 
 #     return render_template('/about.html')
