@@ -2,6 +2,8 @@
 
 ## 本專案使用 mac os
 
+- 本專案是我使用 Flask 框架搭建伺服器來做的履歷專案，內容有些也是在構建過程中去閱讀 Flask 官方文件所寫的筆記
+
 ## before start: init empty repository in project
 
 ```bash
@@ -53,12 +55,12 @@ $ source web\_server/bin/activate # 在bin資料夾下有一個activate可執行
 ### 3.Install Flask
 
 ```bash
-$ pip --version
+$ pip3 --version
 # make sure sure the version of the pip3
 ```
 
 ```bash
-$ pip install Flask # installing Flask
+$ pip3 install Flask # installing Flask
 ```
 
 ### 4.Building A Flask Server
@@ -251,7 +253,186 @@ def hello(myname=None, post_id=None):
 
 ![動態顯示](./images/dynmic.png)
 
+## dynamic => show parameter Url
+
+```python
+@app.route('/<資料型態:參數名>')
+def html_page(page_name):
+    return render_template(page_name)
+```
+
+- 在 Flask 專案中，使用 `@app.route()` 裝飾器來定義路由，其中的`<string: page_name>` 部分表示一個動態路由，它允許我們捕捉 URL 中的特定值並將其傳遞給相應的視圖函數
+  - `@app.route('/<string:page_name>')` 表示當使用者訪問的 URL 形如 /something 時（其中 something 可以是任何字串），Flask 將會調用這個 html_page 函數
+  - `<string:page_name>` 是一個動態部分，代表我們希望從 URL 中捕捉一個字串，並將其作為 page_name 的參數傳遞給 html_page 函數
+  - `def html_page(page_name):` 定義了這個視圖函數，它接受 page_name 作為參數
+  - `render_template(page_name)` 則是 Flask 提供的函數，它會根據傳入的模板名稱 page_name 去渲染相應的 HTML 模板文件
+  - 如果有一個名為 `about.html` 的模板文件位於 `templates` 文件夾下，當用戶訪問 `/about` 時，Flask 將會渲染 `about.html` 並將其呈現給用戶
+
+## 定義模板共用架構 base.html
+
+- 在 html 頁面中會發現多數的內容有些重複，
+- 因此，在 Flask 應用程式中，base.html 是一個用來定義整個網站共用結構和樣式的基本模板。這個模板會被其他具體頁面的模板所擴展（extend），從而實現網站的統一外觀和布局
+- `{% block 定義tag name %}Flask App{% endblock %}`
+
+## Request and Response :如何傳送表單給伺服器 以及 伺服器 接收 resquest 讀取資料
+
+### 解釋一下 request 請求
+
+- 後端開發中，特別是使用 Flask 框架時，可以通過定義路由（也稱為端點）來提供 API
+
+  - 這些路由可以處理不同的 HTTP 請求方法（如 GET、POST、PUT、DELETE 等），並根據請求進行相應的處理和回應
+  - 在 contact me 頁面中有表單送出的功能，那若要開啟這個網路請求的功能，我需要在`後端開api端點`來接收`前端使用者透過request發送過來的請求`
+
+- The Request Object
+  - 當前請求的方法可以透過`method屬性`來定義
+  - 要從 POST or PUT 請求中傳輸的數據取得資料可，則可以使用`form屬性`
+  - 匯入 request
+
+```python=
+from flask import request
+# 從flask模組中匯入
+```
+
+- 首先，在 server.py 中加入可以讓前端提交表單的 API 端點(創建路由)
+
+```python=
+# 定義API端點
+@app.route('/submit_form', methods=['POST', 'GET'])
+def submit_form(): # 定義回傳的內容
+   return '表單已成功提交到伺服器囉！'
+```
+
+- `get`方法是前端/瀏覽器那方想要跟我這端伺服器發送資料給前端
+- `post`方法是前端/瀏覽器那方想要跟我這端伺服器儲存資料
+- 上面的路由要怎麼去調用呢？從不會直接從前端來調用這個方法
+  - 意即：使用者按下 發送 按鈕 要如何把寫好的表單資訊 傳送到後端
+  - 到表單的頁面中，當使用者填好表單，他會按下『發送』按鈕
+  - 從『發送』標籤往父層尋找`form`元素來看結構
+
+```html=
+<button type="submit" class="btn btn-default btn-lg">Send</button>
+<form action="submit_form" method="post" class="reveal-content">
+```
+
+- 意即：使用者按下 發送 按鈕 要如何把寫好的表單資訊 傳送到後端
+
+  - HTML form 表單的 `action 屬性`指定了表單提交的目標 URL
+  - 這裡設為 "/submit_form"，對應後端的路由
+  - `method="post"` 指定使用 POST 方法提交表單，這與後端路由的 methods=['POST'] 相對應
+  - 當使用者點擊 "Send" 按鈕時，表單會自動提交到指定的 URL/API 端點(action `/submit_form`b 然後會運行在伺服器定義的 submit_form()函式)
+  - 後端的 @app.route('/submit_form', methods=['POST']) 裝飾器定義了接收這個表單提交的路由
+  - submit_form() 函數將處理接收到的表單數據
+  - 如需進一步處理表單數據，您可以在 submit_form() 函數中添加相關邏輯，例如:
+
+  ```python=
+  from flask import request
+
+  @app.route('/submit_form', methods=['POST'])
+  def submit_form():
+      name = request.form.get('name')
+      email = request.form.get('email')
+      # 處理數據...
+      return f'表單已成功提交到伺服器囉！收到的姓名: {name}, 郵箱: {email}'
+  ```
+
+> [!important]  
+> 在這種情況下，name 屬性是必須的。沒有 name 屬性的 input 元素的值不會被提交到服務器
+
+![name屬性](./images/name屬性.png)
+
+- 傳送表單後，在 dev tool 中的 network 中看到 submit_form 請求的資料 - 展開後，可以看到 status_code - `Content-Type:
+application/x-www-form-urlencoded` => 這正是在 HTML 中使用表單標籤時，可以發送的標準數據類別
+
+![form_data](./images/form_data.png)
+
+### 伺服器接收 request 如何讀取前端傳送的表單資料？
+
+- 在 flask 文件中 request 有提供.form 的屬性：
+- 另外還有將前端傳送過來的表單資料`name屬性：input值` 組成{字典} 使用.to_dict()
+
+```python=
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        if valid_login(request.form['username'], #這裡
+                       request.form['password']): #這裡
+            return log_the_user_in(request.form['username'])
+        else:
+            error = 'Invalid username/password'
+    # the code below is executed if the request method
+    # was GET or the credentials were invalid
+    return render_template('login.html', error=error)
+```
+
+### 後端讀取前端傳送的表單資料 並回傳一個感謝頁面給前端
+
+```python=
+@app.route('/submit_form', methods=['POST', 'GET'])
+def submit_form():
+    if request.method == 'POST':
+      data = request.form.to_dict()
+      print(data)
+      return '表單已成功提交了！'
+    else:
+      return 'something went wrong@@'
+
+# 若成功提交會出現data在終端機顯示{'email': 'gg@fc.com', 'subject': '我是前端 我想傳送數據給你啊', 'message': '你好啊'}
+```
+
+- 可以在定義一個 html 頁面類似感謝信
+
+  - 需要使用重新定向的方法 flask 有提供
+
+  ```python=
+  from flask import redirect
+  @app.route('/submit_form', methods=['POST', 'GET'])
+  def submit_form():
+    if request.method == 'POST':
+        data = request.form.to_dict()
+        print(data)
+        return redirect('/thankyou.html')
+  ```
+
+  - 因為感謝信的結構和 contactme 頁面一致，只要把 form 結構挖出來替換成表單提交後的 重新定向頁面內容即可！
+  - 記得要在 contact.html 的 form 外層包 ` {% block form %}{% endblock %}`
+
+  ```html=
+  <!-- 這裡的結構跟 contact.html 一樣 只是要挖出form 改作一些提示文字就是說表單已傳輸成功-->
+  {% extends "contact.html" %}
+  {% block form %}
+  <div>我們已收到你的表單，感謝！後續再與你保持聯繫！</div>
+  {% endblock %}
+
+  ```
+
+  > [!important]
+  > 在 Flask 中，從一個路由重定向到另一個路由時，不能直接傳遞數據
+
 ## reference
 
 - 詳請可見[Flask](https://flask.palletsprojects.com/en/3.0.x/installation/)
 - 詳請可見[venv Documentation](https://docs.python.org/3/library/venv.html)
+
+---
+
+## 每次啟動程序流程：
+
+- vscode 打開專案
+
+  - 啟動虛擬伺服器()
+
+  ```bash=
+    $source web\_server/bin/activate
+  ```
+
+  - 終端機 cd 到專案建立的虛擬伺服器環境 資料夾
+
+  ```bash=
+    $cd web_server
+  ```
+
+  - 啟動 Flask 應用程式
+
+  ```bash=
+    $flask --app server run
+  ```
