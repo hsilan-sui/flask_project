@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 
 app = Flask(__name__) 
 
@@ -13,7 +13,10 @@ def html_page(page_name):
 # 定義使用者提交表單的API端點 以及 收到表單資料後 要回傳給前端的內容
 @app.route('/submit_form', methods=['POST', 'GET'])
 def submit_form():
-    return '表單已成功提交到伺服器囉！'
+    if request.method == 'POST':
+        data = request.form.to_dict()
+        print(data)
+        return redirect('/thankyou.html')
 
 # @app.route('/about.html') 
 # def about(): 
