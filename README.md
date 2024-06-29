@@ -335,10 +335,78 @@ def submit_form(): # 定義回傳的內容
       return f'表單已成功提交到伺服器囉！收到的姓名: {name}, 郵箱: {email}'
   ```
 
-  - 傳送表單後，在 dev tool 中的 network 中看到 submit_form 請求的資料 - 展開後，可以看到 status_code - `Content-Type:
+> [!important]  
+> 在這種情況下，name 屬性是必須的。沒有 name 屬性的 input 元素的值不會被提交到服務器
+
+![name屬性](./images/name屬性.png)
+
+- 傳送表單後，在 dev tool 中的 network 中看到 submit_form 請求的資料 - 展開後，可以看到 status_code - `Content-Type:
 application/x-www-form-urlencoded` => 這正是在 HTML 中使用表單標籤時，可以發送的標準數據類別
 
-### 伺服器如何 接收 request 來讀取前端傳送的表單資料
+![form_data](./images/form_data.png)
+
+### 伺服器接收 request 如何讀取前端傳送的表單資料？
+
+- 在 flask 文件中 request 有提供.form 的屬性：
+- 另外還有將前端傳送過來的表單資料`name屬性：input值` 組成{字典} 使用.to_dict()
+
+```python=
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        if valid_login(request.form['username'], #這裡
+                       request.form['password']): #這裡
+            return log_the_user_in(request.form['username'])
+        else:
+            error = 'Invalid username/password'
+    # the code below is executed if the request method
+    # was GET or the credentials were invalid
+    return render_template('login.html', error=error)
+```
+
+### 後端讀取前端傳送的表單資料 並回傳一個感謝頁面給前端
+
+```python=
+@app.route('/submit_form', methods=['POST', 'GET'])
+def submit_form():
+    if request.method == 'POST':
+      data = request.form.to_dict()
+      print(data)
+      return '表單已成功提交了！'
+    else:
+      return 'something went wrong@@'
+
+# 若成功提交會出現data在終端機顯示{'email': 'gg@fc.com', 'subject': '我是前端 我想傳送數據給你啊', 'message': '你好啊'}
+```
+
+- 可以在定義一個 html 頁面類似感謝信
+
+  - 需要使用重新定向的方法 flask 有提供
+
+  ```python=
+  from flask import redirect
+  @app.route('/submit_form', methods=['POST', 'GET'])
+  def submit_form():
+    if request.method == 'POST':
+        data = request.form.to_dict()
+        print(data)
+        return redirect('/thankyou.html')
+  ```
+
+  - 因為感謝信的結構和 contactme 頁面一致，只要把 form 結構挖出來替換成表單提交後的 重新定向頁面內容即可！
+  - 記得要在 contact.html 的 form 外層包 ` {% block form %}{% endblock %}`
+
+  ```html=
+  <!-- 這裡的結構跟 contact.html 一樣 只是要挖出form 改作一些提示文字就是說表單已傳輸成功-->
+  {% extends "contact.html" %}
+  {% block form %}
+  <div>我們已收到你的表單，感謝！後續再與你保持聯繫！</div>
+  {% endblock %}
+
+  ```
+
+  > [!important]
+  > 在 Flask 中，從一個路由重定向到另一個路由時，不能直接傳遞數據
 
 ## reference
 
