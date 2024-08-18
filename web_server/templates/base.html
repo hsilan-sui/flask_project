@@ -26,7 +26,6 @@
 
     <link href="./static/main.3f6952e4.css" rel="stylesheet" />
   </head>
-
   <body class="minimal">
     <div id="site-border-left"></div>
     <div id="site-border-right"></div>
@@ -52,9 +51,10 @@
           <div class="collapse navbar-collapse" id="navbar-collapse">
             <ul class="nav navbar-nav">
               <li><a href="/" title="">01 : 主頁</a></li>
-              <li><a href="./works.html" title="">02 : 專案</a></li>
-              <li><a href="./about.html" title="">03 : 關於我</a></li>
-              <li><a href="./contact.html" title="">04 : 聯繫我</a></li>
+              <li><a href="./temp" title="">02 : 溫濕度儀表板</a></li>
+              <li><a href="./works.html" title="">03 : 專案</a></li>
+              <li><a href="./about.html" title="">04 : 關於我</a></li>
+              <li><a href="./contact.html" title="">05 : 聯繫我</a></li>
             </ul>
           </div>
         </div>
@@ -63,210 +63,18 @@
     <!-- Add your site or app content here -->
     <main>{% block content %}{% endblock %}</main>
     <footer>{% block footer %}{% endblock %}</footer>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script type="text/javascript" src="./static/main.70a66962.js"></script>
+    <!-- Page specific scripts -->
+    {% block scripts %}{% endblock %}
     <script>
       document.addEventListener("DOMContentLoaded", function (event) {
         type();
         movingBackgroundImage();
       });
-
-      async function fetchWeatherData() {
-        try {
-          let response = await fetch("/weather_data");
-          let data = await response.json();
-          // 更新顯示數據
-          document.getElementById(
-            "temperature-value"
-          ).textContent = `${data.temperature} °C`;
-          document.getElementById(
-            "humidity-value"
-          ).textContent = `${data.humidity} %`;
-          document.getElementById("rain-value").textContent = `${data.rain} mm`;
-        } catch (error) {
-          console.error("Error fetching weather data:", error);
-        }
-      }
-
-      function renderHistoricalData() {
-        // 使用假資料
-        const data = [
-          {
-            time: "2024-08-10 10:00",
-            key: "temperature",
-            value: 22.5,
-            notes: "Sunny",
-          },
-          {
-            time: "2024-08-10 11:00",
-            key: "temperature",
-            value: 23.0,
-            notes: "Partly Cloudy",
-          },
-          {
-            time: "2024-08-10 12:00",
-            key: "temperature",
-            value: 24.0,
-            notes: "Sunny",
-          },
-          {
-            time: "2024-08-10 10:00",
-            key: "humidity",
-            value: 55.0,
-            notes: "Sunny",
-          },
-          {
-            time: "2024-08-10 11:00",
-            key: "humidity",
-            value: 53.0,
-            notes: "Partly Cloudy",
-          },
-          {
-            time: "2024-08-10 12:00",
-            key: "humidity",
-            value: 50.0,
-            notes: "Sunny",
-          },
-          { time: "2024-08-10 10:00", key: "rain", value: 0.0, notes: "Sunny" },
-          {
-            time: "2024-08-10 11:00",
-            key: "rain",
-            value: 0.0,
-            notes: "Partly Cloudy",
-          },
-          { time: "2024-08-10 12:00", key: "rain", value: 0.0, notes: "Sunny" },
-        ];
-
-        // 更新表格數據
-        const tableBody = document.getElementById("history-table-body");
-        tableBody.innerHTML = ""; // 清空現有內容
-        data.forEach((row) => {
-          let tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.time}</td>
-            <td>${row.key}</td>
-            <td>${row.value}</td>
-            <td>${row.notes}</td>
-          `;
-          tableBody.appendChild(tr);
-        });
-
-        // 更新圖表數據
-        const temperatureData = data.filter((row) => row.key === "temperature");
-        const humidityData = data.filter((row) => row.key === "humidity");
-        const rainData = data.filter((row) => row.key === "rain");
-
-        // Temperature Chart
-        const temperatureCtx = document
-          .getElementById("temperature-chart")
-          .getContext("2d");
-        new Chart(temperatureCtx, {
-          type: "line",
-          data: {
-            labels: temperatureData.map((row) => row.time),
-            datasets: [
-              {
-                label: "Temperature",
-                data: temperatureData.map((row) => row.value),
-                borderColor: "rgba(255, 99, 132, 1)",
-                backgroundColor: "rgba(255, 99, 132, 0.2)",
-                fill: false,
-              },
-            ],
-          },
-          options: {
-            scales: {
-              x: {
-                title: {
-                  display: true,
-                  text: "Time",
-                },
-              },
-              y: {
-                title: {
-                  display: true,
-                  text: "Temperature (°C)",
-                },
-              },
-            },
-          },
-        });
-
-        // Humidity Chart
-        const humidityCtx = document
-          .getElementById("humidity-chart")
-          .getContext("2d");
-        new Chart(humidityCtx, {
-          type: "line",
-          data: {
-            labels: humidityData.map((row) => row.time),
-            datasets: [
-              {
-                label: "Humidity",
-                data: humidityData.map((row) => row.value),
-                borderColor: "rgba(54, 162, 235, 1)",
-                backgroundColor: "rgba(54, 162, 235, 0.2)",
-                fill: false,
-              },
-            ],
-          },
-          options: {
-            scales: {
-              x: {
-                title: {
-                  display: true,
-                  text: "Time",
-                },
-              },
-              y: {
-                title: {
-                  display: true,
-                  text: "Humidity (%)",
-                },
-              },
-            },
-          },
-        });
-
-        // Rain Chart
-        const rainCtx = document.getElementById("rain-chart").getContext("2d");
-        new Chart(rainCtx, {
-          type: "line",
-          data: {
-            labels: rainData.map((row) => row.time),
-            datasets: [
-              {
-                label: "Rain",
-                data: rainData.map((row) => row.value),
-                borderColor: "rgba(75, 192, 192, 1)",
-                backgroundColor: "rgba(75, 192, 192, 0.2)",
-                fill: false,
-              },
-            ],
-          },
-          options: {
-            scales: {
-              x: {
-                title: {
-                  display: true,
-                  text: "Time",
-                },
-              },
-              y: {
-                title: {
-                  display: true,
-                  text: "Rain (mm)",
-                },
-              },
-            },
-          },
-        });
-      }
-
-      fetchWeatherData();
-      //renderHistoricalData();
-      setInterval(fetchWeatherData, 60000); // 每分鐘刷新數據
     </script>
   </body>
 </html>

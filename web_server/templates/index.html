@@ -1,6 +1,5 @@
 {% extends "base.html" %} {% block title %}Home - Sui WEBSITE{% endblock %} {%
 block content %}
-
 <div
   class="hero-full-container background-image-container white-text-container"
   style="background-image: url('./static/assets/images/internet-map.jpg')"
@@ -25,86 +24,4 @@ block content %}
     </div>
   </div>
 </div>
-
-<div class="container dashboard">
-  <h1 class="text-center">溫濕度感測器數值</h1>
-
-  <div class="row my-3 text-center">
-    <div class="col-12 col-md-6">
-      <div class="card mb-4 rounded-3 shadow-sm">
-        <div class="card-header py-3">
-          <h2 class="my-0 fw-bolder" id="temperature-header">溫度</h2>
-          <p>{{time}}</p>
-        </div>
-        <div class="card-body">
-          <h1 class="card-title pricing-card-title">
-            {{temperature}}<small
-              class="text-muted fw-light"
-              id="temperature-value"
-              >度C</small
-            >
-          </h1>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-md-6">
-      <div class="card mb-4 rounded-3 shadow-sm">
-        <div class="card-header py-3">
-          <h2 class="my-0 fw-bolder" id="humidity-header">濕度</h2>
-          <p>{{time}}</p>
-        </div>
-        <div class="card-body">
-          <h1 class="card-title pricing-card-title">
-            {{humidity}}<small class="text-muted fw-light" id="humidity-value"
-              >%</small
-            >
-          </h1>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- History Table -->
-  <div class="history-table">
-    <h2 class="text-center">最新的歷史資料(50筆)</h2>
-    <div class="history-table" style="max-height: 400px; overflow-y: auto">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th scope="col">時間</th>
-            <th scope="col">溫度</th>
-            <th scope="col">濕度</th>
-          </tr>
-        </thead>
-        <tbody id="history-table-body">
-          <!-- Historical data rows will be inserted here -->
-          {% for row in data %}
-          <tr>
-            <td>{{ row[0] }}</td>
-            <td>{{ row[1] }} °C</td>
-            <td>{{ row[2] }} %</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div> 
-  </div>
-
-    <!-- Chart.js Containers -->
-    <div class="chart-container">
-      <h2 class="text-center">溫度走勢圖</h2>
-      <canvas id="temperature-chart"></canvas>
-    </div>
-    <div class="chart-container">
-      <h2 class="text-center">濕度走勢圖</h2>
-      <canvas id="humidity-chart"></canvas>
-    </div>
-    <div class="chart-container">
-      <h2 class="text-center">Historical Rain Chart</h2>
-      <canvas id="rain-chart"></canvas>
-    </div>
-  </div>
-
-  {% endblock %}
-</div>
+{% endblock %}

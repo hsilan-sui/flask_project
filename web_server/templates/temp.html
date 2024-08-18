@@ -1,0 +1,140 @@
+{% extends "base.html" %} {% block title %}溫濕度專案{% endblock %} {% block
+content %}
+
+<div class="section-container">
+  <div class="text-center">
+    <h1 class="h2">02 : 溫濕度監控儀表板</h1>
+  </div>
+</div>
+<div class="container dashboard">
+  <div class="row my-3 text-center">
+    <div class="col-12 col-md-6">
+      <div class="card mb-4 rounded-3 shadow-sm">
+        <div class="card-header py-3">
+          <h2 class="my-0 fw-bolder" id="temperature-header">溫度</h2>
+          <p>{{time}}</p>
+        </div>
+        <div class="card-body">
+          <h1 class="card-title pricing-card-title">
+            {{temperature}}<small
+              class="text-muted fw-light"
+              id="temperature-value"
+              >度C</small
+            >
+          </h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <div class="card mb-4 rounded-3 shadow-sm">
+        <div class="card-header py-3">
+          <h2 class="my-0 fw-bolder" id="humidity-header">濕度</h2>
+          <p>{{time}}</p>
+        </div>
+        <div class="card-body">
+          <h1 class="card-title pricing-card-title">
+            {{humidity}}<small class="text-muted fw-light" id="humidity-value"
+              >%</small
+            >
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Table -->
+  <div class="history-table">
+    <h2 class="text-center">最新的歷史資料(50筆)</h2>
+    <div class="history-table" style="max-height: 400px; overflow-y: auto">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">時間</th>
+            <th scope="col">溫度</th>
+            <th scope="col">濕度</th>
+          </tr>
+        </thead>
+        <tbody id="history-table-body">
+          {% for row in data %}
+          <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }} °C</td>
+            <td>{{ row[2] }} %</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Chart.js Containers -->
+  <div class="chart-container">
+    <h2 class="text-center">溫濕度圖表</h2>
+    <canvas id="live-chart"></canvas>
+  </div>
+</div>
+{% endblock %}
+<!--js -->
+<!-- JavaScript Block -->
+<!-- JavaScript Block -->
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // 将Jinja2数据转换为JSON格式并正确传递到JavaScript
+    const initialData = {{ data | tojson | safe }};
+    console.log("Initial data:", initialData);
+
+    // 获取日期并只显示一次
+    const firstDate = initialData.length > 0 ? initialData[0][0].split(" ")[0] : "No Date";
+
+    const ctx = document.getElementById("live-chart").getContext("2d");
+    if (ctx) {
+      const chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: initialData.map(item => item[0].split(" ")[1]), // 提取时间中的时、分、秒
+          datasets: [
+            {
+              label: "溫度(度C)",
+              data: initialData.map(item => item[1]), // 温度数据
+              borderColor: "rgba(255, 99, 132, 1)",
+              backgroundColor: "rgba(255, 99, 132, 0.2)",
+              fill: true,
+            },
+            {
+              label: "濕度(%)",
+              data: initialData.map(item => item[2]), // 湿度数据
+              borderColor: "rgba(54, 162, 235, 1)",
+              backgroundColor: "rgba(54, 162, 235, 0.2)",
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: `時間 (今天: ${firstDate})`, // 在X轴显示一次日期
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: "溫濕度感測值",
+              },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    } else {
+      console.error("Canvas element with id 'live-chart' not found.");
+    }
+  });
+</script>
+
+{% endblock %}

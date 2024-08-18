@@ -20,28 +20,7 @@ app.config['MQTT_TLS_ENABLED'] = False  # 如果需要加密则设置为 True
 
 mqtt = Mqtt(app)
 
-# 将接收到的数据写入 CSV 文件
-# def write_to_csv(topic, payload):
-#     try:
-#         # 获取当前的日期和时间
-#         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-       
-#         # 打开或创建 CSV 文件并追加数据
-#         with open('sensor_data.csv', mode="a", newline='', encoding='utf-8') as database:
-#             csv_writer = csv.writer(database, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            
-#             # 提取 JSON 中的数据，并提供默认值以避免 KeyError
-#             distance = payload.get('distance', 'N/A')
-#             temperature = payload.get('temperature', 'N/A')
-#             humidity = payload.get('humidity', 'N/A')
-            
-#             # 写入 CSV 文件   topic, distance,
-#             csv_writer.writerow([current_time, temperature, humidity])
-        
-#         return True
-#     except Exception as e:
-#         print(f"Error writing to CSV: {str(e)}")
-#         return False
+
 # 将接收到的数据写入 CSV 文件
 def write_to_csv(topic, payload):
     try:
@@ -80,21 +59,28 @@ def write_to_csv(topic, payload):
 
 @app.route("/") 
 def home(): 
+    return render_template('index.html')
+
+@app.route("/temp")
+def show_temp():
     data = []
-    # 将最新的温度和湿度数据传递给模板
     temperature = latest_msg.get("data", {}).get("temperature", "--")
     humidity = latest_msg.get("data", {}).get("humidity", "--")
-    time = latest_msg.get("time","--")
+    time = latest_msg.get("time", "--")
     
-    with open('sensor_data.csv', mode='r', encoding='utf-8') as file:
-        csv_reader = list(csv.reader(file))
-        # 获取最新的 40 条数据并倒序排列，过滤掉空行和不完整的记录
-        data = [row for row in csv_reader[-40:][::-1] if len(row) == 3 and all(row)]
+    try:
+        with open('sensor_data.csv', mode='r', encoding='utf-8') as file:
+            csv_reader = list(csv.reader(file))
+            data = [row for row in csv_reader[-40:][::-1] if len(row) == 3 and all(row)]
+    except Exception as e:
+        print(f"Error reading CSV file: {str(e)}")
     
-    # 打印数据调试
-    print(data)
+    print("Temperature:", temperature)
+    print("Humidity:", humidity)
+    print("Time:", time)
+    print("Data:", data)
     
-    return render_template('index.html', data=data, temperature=temperature, humidity=humidity, time=time)
+    return render_template('temp.html', data=data, temperature=temperature, humidity=humidity, time=time)
 
 
 @app.route('/<string:page_name>') 
@@ -121,7 +107,7 @@ def handle_mqtt_message(client, userdata, message):
             "topic": topic,
             "data": payload
         }
-
+        print("Received MQTT message:", latest_msg)
         # 将接收到的数据写入 CSV
         if write_to_csv(topic, payload):
             print("Data saved to CSV")
