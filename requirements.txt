@@ -7,4 +7,6 @@ Jinja2==3.1.4
 jsonify==0.5
 MarkupSafe==2.1.5
 paho-mqtt==1.6.1
+pytz==2024.1
 Werkzeug==3.0.3
+gunicorn

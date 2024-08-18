@@ -1,25 +1,24 @@
-# 使用官方的 Python 基礎映像
+# 使用官方的 Python 基础映像
 FROM python:3.12-slim
 
-# 設置工作目錄
+# 设置工作目录
 WORKDIR /app
 
-# 複製需求文件
+# 复制需求文件
 COPY requirements.txt requirements.txt
 
-# 安裝需求
+# 安装需求
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn
 
-
-# 複製 Flask 專案到容器中
+# 复制 Flask 项目到容器中
 COPY . .
 
-# 設置環境變數以告知 Flask 應用運行在 Docker 容器內
-ENV FLASK_APP=web_server/server.py
-ENV FLASK_RUN_HOST=0.0.0.0
+# 设置时区
+ENV TZ=Asia/Taipei
 
-# 暴露 Flask 使用的端口
-EXPOSE 5000
+# 暴露端口
+EXPOSE 5001
 
-# 運行 Flask 應用
-CMD ["flask", "run"]
+# 使用 gunicorn 启动 Flask 应用
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "web_server.server:app"]
