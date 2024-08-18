@@ -1,10 +1,24 @@
 # My_Portfolio Project
 
+- [專案初始化](#專案初始化)
+- [flask 環境建置](#flask環境建置)
+- [建立 flask 迷你應用程式](#建立flask迷你應用程式)
+
+- [專案初始化](#專案初始化)
+
+- [當伺服器掛點，傳過去的資料該怎麼辦？](#當伺服器掛點，傳過去的資料該怎麼辦？)
+
 ## 本專案使用 mac os
+
+```bash
+$ cd web_server
+$ source web\_server/bin/activate # 啟用虛擬環境
+$ flask --app server run -- #runserver
+```
 
 - 本專案是我使用 Flask 框架搭建伺服器來做的履歷專案，內容有些也是在構建過程中去閱讀 Flask 官方文件所寫的筆記
 
-## before start: init empty repository in project
+## <a name="專案初始化"></a>專案初始化
 
 ```bash
 $ mkdir flask_project # 建立專案資料夾
@@ -13,10 +27,12 @@ $ git init # 在本地數據庫-建立空儲存庫
 
 $ mkdir web_server
 $ cd web_server
+$ source web\_server/bin/activate # 在bi
+$ flask --app server run -- #runserver
 $ touch index.html style.css script.js;code .
 ```
 
-## Setting Up Flask
+## <a name="flask環境建置"></a>flask 環境建置
 
 ### 1. Create an virtural environment:
 
@@ -65,7 +81,7 @@ $ pip3 install Flask # installing Flask
 
 ### 4.Building A Flask Server
 
-## A Minimal Application
+## <a name="建立flask迷你應用程式"></a>建立 flask 迷你應用程式
 
 ### create a new python file(server.py) in web_server directory
 
@@ -407,6 +423,24 @@ def submit_form():
 
   > [!important]
   > 在 Flask 中，從一個路由重定向到另一個路由時，不能直接傳遞數據
+
+  ## 當伺服器掛點，傳過去的資料該怎麼辦？(模擬資料庫)
+
+  - 就像平常自己備份一樣，會先把資料備份在 usb 或是磁碟區中，即使電腦突然壞，也還好有備份
+  - 當前專案已看起來有些完整，但假設今天資料都在伺服器(記憶體中)這裡，但伺服器突然崩潰，資料就會消失
+    - 和可攜式硬碟一樣，把收到的資料寫進檔案裡儲存
+    - 創建檔案(就叫做 database.txt 和 server.py 在同層)
+    - database.txt 暫時當作資料庫，當伺服器收到前端傳來的資料，就會寫入到 database.txt 做儲存
+    - 以當前專案為例，我將儲存電子郵件/表單主題/訊息
+    ```python
+    # 模擬資料庫
+    def write_to_files(data):
+        with open('dtatbase.txt',mode='a') as database:
+            email = data['email']
+            subject = data['subject']
+            message = data['message']
+            file = database.write(f'\n{email}, {subject}, {message}')
+    ```
 
 ## reference
 
