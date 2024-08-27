@@ -1,19 +1,45 @@
-# My_Portfolio Project
+# 物聯網專案
 
+- 專案架構圖 與 技術應用
+- 開發環境
 - [專案初始化](#專案初始化)
 - [flask 環境建置](#flask環境建置)
 - [建立 flask 迷你應用程式](#建立flask迷你應用程式)
-
 - [專案初始化](#專案初始化)
-
 - [當伺服器掛點，傳過去的資料該怎麼辦？](#當伺服器掛點，傳過去的資料該怎麼辦？)
+
+## 開發環境
+
+- 硬體資源：
+
+  - 開發版：ESP32
+  - 感測器：
+    - DHT11 溫濕度感測器
+    - HC-SR04 超音波測距模組
+    - 無源蜂鳴器
+    - RGB LED 燈 ＊ 3 組
+    - (Servo Moto)
+
+- 軟體與通信協定應用:
+
+  - HTTP / HTTPS
+  - MQTT(Publish,Subscribe)
+  - Line Notify
+  - (WebSocket)
+
+- 程式語言：
+  - C 語言
+  - Python
+  - 後端框架 Flask
+  - 前端 HTML CSS JS
+  - 前端框架 Bootstrap 5
 
 ## 本專案使用 mac os
 
 ```bash
 $ cd web_server
 $ source web\_server/bin/activate # 啟用虛擬環境
-$ flask --app server run -- #runserver
+$ flask --app server run --debug #runserver
 ```
 
 - 本專案是我使用 Flask 框架搭建伺服器來做的履歷專案，內容有些也是在構建過程中去閱讀 Flask 官方文件所寫的筆記
@@ -28,7 +54,7 @@ $ git init # 在本地數據庫-建立空儲存庫
 $ mkdir web_server
 $ cd web_server
 $ source web\_server/bin/activate # 在bi
-$ flask --app server run -- #runserver
+$ flask --app server run --debug #runserver 你要在web_server底下執行
 $ touch index.html style.css script.js;code .
 ```
 

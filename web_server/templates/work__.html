@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RGB Light Controller</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <h1>RGB Light Controller</h1>
+
+    <div>
+      <h3>Control Individual Light</h3>
+      <label for="light">Choose Light:</label>
+      <select id="light">
+        <option value="sui_hsilan/iot_controller/X_led">Light X</option>
+        <option value="sui_hsilan/iot_controller/Y_led">Light Y</option>
+        <option value="sui_hsilan/iot_controller/Z_led">Light Z</option>
+      </select>
+
+      <div>
+        <label for="r_value">R:</label>
+        <input type="number" id="r_value" min="0" max="255" value="255" />
+        <label for="g_value">G:</label>
+        <input type="number" id="g_value" min="0" max="255" value="255" />
+        <label for="b_value">B:</label>
+        <input type="number" id="b_value" min="0" max="255" value="255" />
+      </div>
+
+      <button onclick="controlLight('on')">Turn On</button>
+      <button onclick="controlLight('off')">Turn Off</button>
+      <button onclick="controlLight('blink')">Blink</button>
+    </div>
+
+    <div>
+      <h3>Control All Lights</h3>
+      <button onclick="controlAllLights('on')">Turn All On</button>
+      <button onclick="controlAllLights('off')">Turn All Off</button>
+    </div>
+
+    <script>
+      function controlLight(action) {
+        const topic = $("#light").val();
+        const r = $("#r_value").val();
+        const g = $("#g_value").val();
+        const b = $("#b_value").val();
+
+        const data = {
+          action: action,
+          topic: topic,
+          rgb_values: { r: parseInt(r), g: parseInt(g), b: parseInt(b) },
+        };
+
+        $.ajax({
+          url: "/control_light",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(data),
+          success: function (response) {
+            alert("Light control successful");
+          },
+          error: function (error) {
+            alert("Failed to control light");
+          },
+        });
+      }
+
+      function controlAllLights(action) {
+        const data = { action: action };
+
+        $.ajax({
+          url: "/control_all_lights",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(data),
+          success: function (response) {
+            alert("All lights control successful");
+          },
+          error: function (error) {
+            alert("Failed to control all lights");
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

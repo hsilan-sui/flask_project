@@ -1,25 +1,96 @@
 {% extends "base.html" %} {% block title %}我的專案{% endblock %} {% block
 content %}
-<div class="section-container">
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+  crossorigin="anonymous"
+/>
+<style>
+  body {
+    background: #222;
+    margin: 0rem;
+    min-height: 100vh;
+    font-family: Futura, sans-serif;
+  }
+  .title {
+    color: white;
+  }
+  #canvas,
+  #text {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+  #text {
+    min-height: 100vh;
+    width: 100vw;
+    z-index: 1;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 8vmin;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  #text h1 {
+    opacity: 0.9;
+  }
+  /* 開關燈按鈕*/
+
+  /* 开关灯按钮 在寫 */
+  .form-custom .form-check-input {
+    width: 4rem; /* 调整宽度以更大尺寸 */
+    height: 2rem; /* 调整高度以更大尺寸 */
+    transform: scale(2); /* 更大的放大比例 */
+    border-radius: 2rem; /* 调整圆角半径 */
+    background-color: #ccc; /* 默认背景颜色为灰色 */
+    border-color: #ccc; /* 默认边框颜色为灰色 */
+  }
+
+  /* 当checkbox被勾选时，改变背景颜色和边框颜色 */
+  .form-custom .form-check-input:checked {
+    background-color: #007bff; /* 选中时背景颜色为蓝色 */
+    border-color: #007bff; /* 选中时边框颜色为蓝色 */
+  }
+
+  /* 调整标签的文字大小 */
+  .form-custom .form-check-label {
+    font-size: 1.5rem; /* 调整标签的文字大小 */
+  }
+
+  /*顏色*/
+  .color-preview {
+    width: 100%;
+    height: 50px;
+    margin-top: 20px;
+    border-radius: 5px;
+    background-color: rgb(255, 0, 0);
+  }
+</style>
+
+<canvas id="canvas"></canvas>
+
+<div class="">
   <div class="container">
     <div class="row">
-      <div class="col-sm-8 col-sm-offset-2 section-container-spacer">
+      <div class="">
         <div class="text-center">
-          <h1 class="h2">02 : 專案</h1>
-          <p>
-            Nulla facilisi. Vivamus vestibulum, elit in scelerisque ultricies,
-            nisl nunc pulvinar ligula, id sodales arcu sapien in nisi. Quisque
-            libero enim, mattis non augue posuere, venenatis dapibus urna.
-          </p>
+          <h1 class="h2 title">03 : 居家燈光調控</h1>
+          <p>-----</p>
         </div>
       </div>
-
       <div class="col-md-12">
         <div id="myCarousel" class="carousel slide projects-carousel">
           <!-- Carousel items -->
           <div class="carousel-inner">
             <div class="item active">
+              <!--卡片結構row-->
               <div class="row">
+                <!--客廳燈 X-->
                 <div class="col-sm-4">
                   <a
                     href="./work.html"
@@ -33,17 +104,94 @@ content %}
                     />
                   </a>
                   <div class="card-container card-container-lg">
-                    <h4>001/006</h4>
-                    <h3>Fringilla sit amet</h3>
-                    <p>
-                      Nulla facilisi. Vivamus vestibulum, elit in scelerisque
-                      ultricies.
-                    </p>
-                    <a href="./work.html" title="" class="btn btn-default"
-                      >Discover</a
-                    >
+                    <h4>客廳燈</h4>
+                    <h3>客廳燈</h3>
+                    <!--X_LED 開關按鈕-->
+                    <!--x以這個為主-->
+                    <div class="mt-5 p-4 d-flex justify-content-center">
+                      <button
+                        type="button"
+                        class="btn btn-primary rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('ON','sui_hsilan/iot/led_1')"
+                      >
+                        開燈
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-danger rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('OFF','sui_hsilan/iot/led_1')"
+                      >
+                        關燈
+                      </button>
+                    </div>
+                    <!--X_LED 閃爍按鈕-->
+                    <div class="mt-5 p-4 d-flex justify-content-center">
+                      <button
+                        type="button"
+                        class="btn btn-info rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('BLINK','sui_hsilan/iot/led_1')"
+                      >
+                        閃爍
+                      </button>
+                    </div>
+                    <!--x客廳燈 調光 滑桿-->
+                    <div class="container mt-4" id="x_slidrgb-wrapper">
+                      <h3 class="text-center">調光</h3>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="x_redRange" class="form-label me-3 h4"
+                          >紅光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="x_redRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="x_greenRange" class="form-label me-3 h4"
+                          >綠光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="x_greenRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="x_blueRange" class="form-label me-3 h4"
+                          >藍光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="x_blueRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div class="text-center mt-3">
+                        <span id="x_rgbValue">rgb(0, 0, 0)</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
+                <!--浴室燈 Y-->
                 <div class="col-sm-4">
                   <a
                     href="./work.html"
@@ -57,17 +205,94 @@ content %}
                     />
                   </a>
                   <div class="card-container card-container-lg">
-                    <h4>002/006</h4>
-                    <h3>Nulla scelerisque</h3>
-                    <p>
-                      Proin pharetra metus id iaculis dignissim. In aliquet
-                      lorem ut ex ullamcorper.
-                    </p>
-                    <a href="./work.html" title="" class="btn btn-default"
-                      >Discover</a
-                    >
+                    <h4>浴室燈</h4>
+                    <h3>浴室燈</h3>
+                    <!--Y_LED 開關按鈕-->
+                    <!--y以這個為主-->
+                    <div class="mt-5 p-4 d-flex justify-content-center">
+                      <button
+                        type="button"
+                        class="btn btn-primary rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('ON', 'sui_hsilan/iot/led_2')"
+                      >
+                        開燈
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-danger rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('OFF','sui_hsilan/iot/led_2')"
+                      >
+                        關燈
+                      </button>
+                    </div>
+                    <!--Y_LED 閃爍按鈕-->
+                    <div class="mt-5 p-4 d-flex justify-content-center">
+                      <button
+                        type="button"
+                        class="btn btn-info rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('BLINK','sui_hsilan/iot/led_2')"
+                      >
+                        閃爍
+                      </button>
+                    </div>
+                    <!--y浴室燈 調光 滑桿-->
+                    <div class="container mt-4" id="y_slidrgb-wrapper">
+                      <h3 class="text-center">調光</h3>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="redRange" class="form-label me-3 h4"
+                          >紅光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="y_redRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="greenRange" class="form-label me-3 h4"
+                          >綠光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="y_greenRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="blueRange" class="form-label me-3 h4"
+                          >藍光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="y_blueRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div class="text-center mt-3">
+                        <span id="y_rgbValue">rgb(0, 0, 0)</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
+                <!--臥室燈 Z-->
                 <div class="col-sm-4">
                   <a
                     href="./work.html"
@@ -81,116 +306,404 @@ content %}
                     />
                   </a>
                   <div class="card-container card-container-lg">
-                    <h4>003/006</h4>
-                    <h3>Vivamus vestibulum</h3>
-                    <p>
-                      Fusce sed hendrerit augue, a rhoncus velit. In non lorem
-                      mattis, tempor sem sit amet.
-                    </p>
-                    <a href="./work.html" title="" class="btn btn-default"
-                      >Discover</a
-                    >
+                    <h4>臥室燈</h4>
+                    <h3>臥室燈</h3>
+                    <!--Z_LED 開關按鈕-->
+                    <!--以這個為主-->
+                    <div class="mt-5 p-4 d-flex justify-content-center">
+                      <button
+                        type="button"
+                        class="btn btn-primary rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('ON','sui_hsilan/iot/led_3')"
+                      >
+                        開燈
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-danger rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('OFF','sui_hsilan/iot/led_3')"
+                      >
+                        關燈
+                      </button>
+                    </div>
+                    <!--Z_LED 閃爍按鈕-->
+                    <div class="mt-5 p-4 d-flex justify-content-center">
+                      <button
+                        type="button"
+                        class="btn btn-info rounded-circle p-0"
+                        style="width: 50px; height: 50px; font-size: 1.5rem"
+                        onclick="controlLight('BLINK','sui_hsilan/iot/led_3')"
+                      >
+                        閃爍
+                      </button>
+                    </div>
+                    <!--z臥室燈 調光 滑桿-->
+                    <div class="container mt-4" id="z_slidrgb-wrapper">
+                      <h3 class="text-center">調光</h3>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="redRange" class="form-label me-3 h4"
+                          >紅光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="z_redRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="greenRange" class="form-label me-3 h4"
+                          >綠光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="z_greenRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <label for="blueRange" class="form-label me-3 h4"
+                          >藍光</label
+                        >
+                        <input
+                          type="range"
+                          class="form-range"
+                          id="z_blueRange"
+                          min="0"
+                          max="255"
+                          value="0"
+                        />
+                      </div>
+                      <div class="text-center mt-3">
+                        <span id="z_rgbValue">rgb(0, 0, 0)</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
               <!--/row-->
             </div>
-            <!--/item-->
-            <div class="item">
-              <div class="row">
-                <div class="col-sm-4">
-                  <a href="./work.html" class="black-image-project-hover">
-                    <img
-                      src="./static/assets/images/work02-hover.jpg"
-                      alt="Image"
-                      class="img-responsive"
-                    />
-                  </a>
-                  <div class="card-container">
-                    <h4>004/006</h4>
-                    <h3>Nulla scelerisque</h3>
-                    <p>
-                      Proin pharetra metus id iaculis dignissim. In aliquet
-                      lorem ut ex ullamcorper.
-                    </p>
-                    <a href="./work.html" class="btn btn-default">Discover</a>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <a href="./work.html" class="black-image-project-hover">
-                    <img
-                      src="./static/assets/images/work01-hover.jpg"
-                      alt="Image"
-                      class="img-responsive"
-                    />
-                  </a>
-                  <div class="card-container">
-                    <h4>005/006</h4>
-                    <h3>Fringilla sit amet</h3>
-                    <p>
-                      Nulla facilisi. Vivamus vestibulum, elit in scelerisque
-                      ultricies.
-                    </p>
-                    <a href="./work.html" class="btn btn-default">Discover</a>
-                  </div>
-                </div>
-
-                <div class="col-sm-4">
-                  <a href="./work.html" class="black-image-project-hover">
-                    <img
-                      src="./static/assets/images/work03-hover.jpg"
-                      alt="Image"
-                      class="img-responsive"
-                    />
-                  </a>
-                  <div class="card-container">
-                    <h4>006/006</h4>
-                    <h3>Vivamus vestibulum</h3>
-                    <p>
-                      Fusce sed hendrerit augue, a rhoncus velit. In non lorem
-                      mattis, tempor sem sit amet.
-                    </p>
-                    <a href="./work.html" class="btn btn-default">Discover</a>
-                  </div>
-                </div>
-              </div>
-              <!--/row-->
-            </div>
-
-            <!--/item-->
           </div>
-          <!--/carousel-inner-->
-          <a class="left carousel-control" href="#myCarousel" data-slide="prev"
-            >‹</a
-          >
-
-          <a class="right carousel-control" href="#myCarousel" data-slide="next"
-            >›</a
-          >
         </div>
-
-        <!--/myCarousel-->
       </div>
     </div>
+    <!--總開關區 -->
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="mt-5 card-container card-container-lg">
+            <h3 class="text-center">居家電燈:總開關</h3>
+            <!--all_LED 開關按鈕-->
+            <div class="container mt-4">
+              <div class="d-flex justify-content-center gap-3">
+                <button
+                  type="button"
+                  class="btn btn-info rounded-circle p-0"
+                  style="width: 50px; height: 50px; font-size: 1.5rem"
+                  onclick="controlAllLights('ON')"
+                >
+                  全開
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-danger rounded-circle p-0"
+                  style="width: 50px; height: 50px; font-size: 1.5rem"
+                  onclick="controlAllLights('OFF')"
+                >
+                  全關
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endblock %}
+    <!---->
+    {% block footer %}
+    <footer class="footer-container text-center">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12">
+            <p>© 本網站僅作練習DEMO使用 不做商業用途</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      let resizeReset = function () {
+        w = canvasBody.width = window.innerWidth;
+        h = canvasBody.height = window.innerHeight;
+      };
+
+      const opts = {
+        particleColor: "rgb(200,200,200)",
+        lineColor: "rgb(200,200,200)",
+        particleAmount: 30,
+        defaultSpeed: 1,
+        variantSpeed: 1,
+        defaultRadius: 2,
+        variantRadius: 2,
+        linkRadius: 200,
+      };
+
+      window.addEventListener("resize", function () {
+        deBouncer();
+      });
+
+      let deBouncer = function () {
+        clearTimeout(tid);
+        tid = setTimeout(function () {
+          resizeReset();
+        }, delay);
+      };
+
+      let checkDistance = function (x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      };
+
+      let linkPoints = function (point1, hubs) {
+        for (let i = 0; i < hubs.length; i++) {
+          let distance = checkDistance(
+            point1.x,
+            point1.y,
+            hubs[i].x,
+            hubs[i].y
+          );
+          let opacity = 1 - distance / opts.linkRadius;
+          if (opacity > 0) {
+            drawArea.lineWidth = 0.5;
+            drawArea.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`;
+            drawArea.beginPath();
+            drawArea.moveTo(point1.x, point1.y);
+            drawArea.lineTo(hubs[i].x, hubs[i].y);
+            drawArea.closePath();
+            drawArea.stroke();
+          }
+        }
+      };
+
+      Particle = function (xPos, yPos) {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.speed = opts.defaultSpeed + Math.random() * opts.variantSpeed;
+        this.directionAngle = Math.floor(Math.random() * 360);
+        this.color = opts.particleColor;
+        this.radius = opts.defaultRadius + Math.random() * opts.variantRadius;
+        this.vector = {
+          x: Math.cos(this.directionAngle) * this.speed,
+          y: Math.sin(this.directionAngle) * this.speed,
+        };
+        this.update = function () {
+          this.border();
+          this.x += this.vector.x;
+          this.y += this.vector.y;
+        };
+        this.border = function () {
+          if (this.x >= w || this.x <= 0) {
+            this.vector.x *= -1;
+          }
+          if (this.y >= h || this.y <= 0) {
+            this.vector.y *= -1;
+          }
+          if (this.x > w) this.x = w;
+          if (this.y > h) this.y = h;
+          if (this.x < 0) this.x = 0;
+          if (this.y < 0) this.y = 0;
+        };
+        this.draw = function () {
+          drawArea.beginPath();
+          drawArea.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          drawArea.closePath();
+          drawArea.fillStyle = this.color;
+          drawArea.fill();
+        };
+      };
+
+      function setup() {
+        particles = [];
+        resizeReset();
+        for (let i = 0; i < opts.particleAmount; i++) {
+          particles.push(new Particle());
+        }
+        window.requestAnimationFrame(loop);
+      }
+
+      function loop() {
+        window.requestAnimationFrame(loop);
+        drawArea.clearRect(0, 0, w, h);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+        }
+        for (let i = 0; i < particles.length; i++) {
+          linkPoints(particles[i], particles);
+        }
+      }
+
+      const canvasBody = document.getElementById("canvas"),
+        drawArea = canvasBody.getContext("2d");
+      let delay = 200,
+        tid,
+        rgb = opts.lineColor.match(/\d+/g);
+      resizeReset();
+      setup();
+    </script>
+    <script>
+      //處理-個別開關燈函式
+      //1.從點擊來觸發函式
+      function controlLight(action, topic) {
+        //組織action為json data
+        const data = {
+          action: action,
+          topic: topic,
+        };
+        console.log(data);
+        //組織http格式=>傳送ajax請求
+        $.ajax({
+          url: "control_light",
+          type: "POST", //methods
+          contentType: "application/json",
+          data: JSON.stringify(data),
+          success: function (response) {
+            console.log(`開關眨眼指令 傳遞成功！`);
+          },
+          error: function (error) {
+            console.log("開關眨眼指令 傳遞有誤！");
+          },
+        });
+      }
+
+      //處理-總開關燈函式
+      //1.在總開關的html按鈕標籤上 定義了onclick點擊觸發屬性，值就controlAllLights這個函式
+      //2.透過指令在該函式的傳參數來作為action(使用者想要的結果)=>等同於發佈mqtt主題的字串=>控制開關燈
+      function controlAllLights(action) {
+        //組織action為json data
+        //{ "action": "ON",} { "action": "OFF",}
+        const data = { action: action };
+
+        //組織http格式=>傳送ajax請求
+        $.ajax({
+          url: "control_all_lights",
+          type: "POST", //methods
+          contentType: "application/json",
+          data: JSON.stringify(data),
+          success: function (response) {
+            console.log("總開關指令 傳遞成功！");
+          },
+          error: function (error) {
+            console.log("總開關指令 傳遞有誤！");
+          },
+        });
+      }
+
+      //使用原生的JS 創建web socket 實例
+      //使用原生 JavaScript WebSocket API 連接 ESP32 WebSocket 伺服器
+      //esp32 => WebSocketsServer webSocket(81); WiFi.locateIP()
+      // 將 <ESP32_IP> 替換為 ESP32 的實際 IP 地址
+      //動態取的ip位址
+      //esp32變數
+      // 使用 let 声明 esp32_ip 以便更新其值
+      let esp32_ip = null;
+
+      function fetchESP32IP() {
+        fetch("/get_ip")
+          .then((response) => response.json())
+          .then((data) => {
+            // 将 esp32_ip 变量更新为从服务器获取的 IP 地址
+            esp32_ip = data.ip;
+            console.log("ESP32的 IP 地址:", esp32_ip);
+
+            // 在成功获取 IP 地址后再创建 WebSocket 连接
+            const wsSocket = new WebSocket(`ws://${esp32_ip}:81`);
+            console.log(wsSocket);
+
+            wsSocket.onopen = () => console.log("WebSocket 連接已建立");
+            wsSocket.onmessage = (event) =>
+              console.log("来自 WebSocket server 的數據: ", event.data);
+            wsSocket.onerror = (error) =>
+              console.log("WebSocket 出錯: ", error);
+            wsSocket.onclose = () => console.log("WebSocket 連接已關閉");
+
+            // 绑定事件监听器，发送 RGB 值
+            setupRGBSliderListeners(wsSocket);
+          })
+          .catch((error) => console.error("無法正確獲取 ESP32 的 IP: ", error));
+      }
+
+      // 定义 RGB 滑块监听器设置函数
+      function setupRGBSliderListeners(wsSocket) {
+        document
+          .querySelector("#x_slidrgb-wrapper")
+          .addEventListener("input", function (event) {
+            if (event.target.type === "range") {
+              const r = document.querySelector("#x_redRange").value;
+              const g = document.querySelector("#x_greenRange").value;
+              const b = document.querySelector("#x_blueRange").value;
+              const data = JSON.stringify({
+                light: "x",
+                rgb: `${r},${g},${b}`,
+              });
+              wsSocket.send(data);
+              console.log(`發送客廳燈 RGB 數據: ${data}`);
+            }
+          });
+
+        document
+          .querySelector("#y_slidrgb-wrapper")
+          .addEventListener("input", function (event) {
+            if (event.target.type === "range") {
+              const r = document.querySelector("#y_redRange").value;
+              const g = document.querySelector("#y_greenRange").value;
+              const b = document.querySelector("#y_blueRange").value;
+              const data = JSON.stringify({
+                light: "y",
+                rgb: `${r},${g},${b}`,
+              });
+              wsSocket.send(data);
+              console.log(`發送浴室燈 RGB 數據: ${data}`);
+            }
+          });
+
+        document
+          .querySelector("#z_slidrgb-wrapper")
+          .addEventListener("input", function (event) {
+            if (event.target.type === "range") {
+              const r = document.querySelector("#z_redRange").value;
+              const g = document.querySelector("#z_greenRange").value;
+              const b = document.querySelector("#z_blueRange").value;
+              const data = JSON.stringify({
+                light: "z",
+                rgb: `${r},${g},${b}`,
+              });
+              wsSocket.send(data);
+              console.log(`發送臥室燈 RGB 數據: ${data}`);
+            }
+          });
+      }
+
+      // 调用函数以获取 ESP32 的 IP 地址并建立 WebSocket 连接
+      fetchESP32IP();
+    </script>
+    {% endblock %}
   </div>
 </div>
-{% endblock %} {% block footer %}
-<footer class="footer-container text-center">
-  <div class="container">
-    <div class="row">
-      <div class="col-xs-12">
-        <p>
-          © UNTITLED | Website created with
-          <a
-            href="http://www.mashup-template.com/"
-            title="Create website with free html template"
-            >Mashup Template</a
-          >/<a href="https://www.unsplash.com/" title="Beautiful Free Images"
-            >Unsplash</a
-          >
-        </p>
-      </div>
-    </div>
-  </div>
-</footer>
-{% endblock %}

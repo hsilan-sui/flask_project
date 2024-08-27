@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template, request, redirect
 from flask_mqtt import Mqtt
+#from flask_socketio import SocketIO, emit
 import json
 import csv
 import os
@@ -8,6 +9,10 @@ import pytz
 
 app = Flask(__name__) 
 tz = pytz.timezone('Asia/Taipei')
+
+# IP變數
+esp32_ip = None
+
 # 最新消息
 latest_msg = {}
 
@@ -21,6 +26,12 @@ app.config['MQTT_TLS_ENABLED'] = False  # 如果需要加密则设置为 True
 
 mqtt = Mqtt(app)
 
+# 發佈mqtt消息的函式
+def publish_mqtt_msg(topic, payload):
+    print(f"發布了mqtt的主題 {topic}: {payload}")
+    #將訊息發布到指定的 MQTT 主題上
+    mqtt.publish(topic, payload)
+    #mqtt.publish(topic, json.dumps(payload)) #Python 字典轉換為 JSON 格式的字符串#JSON 格式的數據
 
 # 将接收到的数据写入 CSV 文件
 def write_to_csv(topic, payload):
@@ -61,31 +72,38 @@ def write_to_csv(topic, payload):
 # 当连接到 MQTT Broker 时-订阅 MQTT 推播到 Broker 的主题
 @mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
+    print("已經連上mqtt broker")
+    mqtt.subscribe("school/esp32/ip")  # 訂閱 IP 主題
     mqtt.subscribe('sui_hsilan/iot_house_esp32/sensor_data')  # 订阅 ESP32 发送的主题
 
 
-# 当收到 MQTT 消息时
+# 當收到 MQTT 消息時處理消息
 @mqtt.on_message()
 def handle_mqtt_message(client, userdata, message):
-    global latest_msg
+    global esp32_ip, latest_msg
     try:
-        payload = json.loads(message.payload.decode())  # 解码消息并转换为 JSON 格式
-        topic = message.topic  # 获取主题
-
-        # 保存最新的消息
-        latest_msg = {
-            "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            "topic": topic,
-            "data": payload
-        }
-        print("Received MQTT message:", latest_msg)
-        # 将接收到的数据写入 CSV
-        if write_to_csv(topic, payload):
-            print("Data saved to CSV")
+        if message.topic == "school/esp32/ip":
+            esp32_ip = message.payload.decode()  # 更新 esp32_ip 變數
+            print("從ESP32收到 IP位址: " + esp32_ip)
         else:
-            print("Failed to save data")
+            payload = json.loads(message.payload.decode())  # 解码消息并转换为 JSON 格式
+            topic = message.topic  # 获取主题
+
+            # 保存最新的消息
+            latest_msg = {
+                "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "topic": topic,
+                "data": payload
+            }
+            print("收到 MQTT 訊息:", latest_msg)
+
+            # 将接收到的数据写入 CSV
+            if write_to_csv(topic, payload):
+                print("資料存入CSV")
+            else:
+                print("存取資料失敗")
     except Exception as e:
-        print(f"Error processing MQTT message: {str(e)}")
+        print(f"讀取mqtt消息失敗: {str(e)}")
 
 
 # 定义一个 API 端点来查看最新消息
@@ -122,20 +140,71 @@ def show_temp():
 def html_page(page_name): 
     return render_template(page_name)
 
+# 路由：控制單一主題的Rgb燈
+@app.route('/control_light', methods=['POST'])
+def control_light(): #用於處理前端發送的 HTTP POST 請求
+    try:
+        #{ "action": "ON"} { "action": "OFF"}{ "action": "BLINK"}
+        #取得前端傳送過來的data
+        data = request.json
+        #取出指令on/off/blink
+        action = data.get('action')
+        #發布消息的主題(單獨控制開關/ 控制BLINK=>sui_hsilan/iot/led_4)：
+        #取出主題
+        topic = data.get('topic')
+        
+        #action狀態處理(傳回去只需要字符串 不需要json)
+        if action == "ON":
+            payload = "ON"
+        elif action == "OFF":
+            payload = "OFF"
+        elif action == "BLINK":
+            payload = "BLINK"    
+        else:
+            return jsonify({"error": "不存在的action"})
 
+        # 發布MQTT主題：關全燈/開全燈
+        print(f"{payload},{topic}")
+        publish_mqtt_msg(topic, payload)
+    
+        return jsonify({"status": "發佈主題4成功"})
+    except Exception as e:
+        print(f"單獨控制出錯：{str(e)}")
+        return jsonify({"error": str(e)}), 500
 
-# 定义用户提交表单的 API 端点 以及收到表单数据后要返回给前端的内容
-# @app.route('/submit_form', methods=['POST', 'GET'])
-# def submit_form():
-#     if request.method == 'POST':
-#         data = request.form.to_dict()
-#         # print(data)
-#         if write_to_csv(data.get('topic', 'N/A'), data):
-#             return redirect('/thankyou.html')
-#         else:
-#             return 'Failed to save to database'
-#     else:
-#         return 'Something went wrong, Try again!'
+# POST路由：控制總開關主題的Rgb燈
+@app.route('/control_all_lights', methods=['POST'])
+def control_all_lights():
+    try:
+        #{ "action": "ON"} { "action": "OFF"}
+        #取得前端傳送過來的data
+        data = request.json
+        action = data.get('action')
+        #發布消息的主題(控制總開關=>sui_hsilan/iot/led_4)：
+        topic = "sui_hsilan/iot/led_4"
+        
+        #action狀態處理(傳回去只需要字符串 不需要json)
+        if action == "ON":
+            payload = "ON"
+        elif action == "OFF":
+            payload = "OFF"
+        else:
+            return jsonify({"error": "不存在的action"})
+
+        # 發布MQTT主題：關全燈/開全燈
+        print(f"{payload}")
+        publish_mqtt_msg(topic, payload)
+    
+        return jsonify({"status": "發佈主題4成功"})
+    except Exception as e:
+        print(f"總開關控制出錯：{str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+#取的esp32 ip端點
+@app.route('/get_ip', methods=['GET'])
+def get_ip():
+    return jsonify({"ip": esp32_ip})
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5001)
+
