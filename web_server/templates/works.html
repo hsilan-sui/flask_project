@@ -622,33 +622,39 @@ content %}
       // 將 <ESP32_IP> 替換為 ESP32 的實際 IP 地址
       //動態取的ip位址
       //esp32變數
+      const wsSocket = new WebSocket(`wss://https://flask-o0hc.onrender.com`);
+      console.log(wsSocket);
       // 使用 let 声明 esp32_ip 以便更新其值
       let esp32_ip = null;
 
-      function fetchESP32IP() {
-        fetch("/get_ip")
-          .then((response) => response.json())
-          .then((data) => {
-            // 将 esp32_ip 变量更新为从服务器获取的 IP 地址
-            esp32_ip = data.ip;
-            console.log("ESP32的 IP 地址:", esp32_ip);
+      //function fetchESP32IP() {
+      //fetch("/get_ip")
+      //.then((response) => response.json())
+      //.then((data) => {
+      // 将 esp32_ip 变量更新为从服务器获取的 IP 地址
+      //使用标准 HTTPS 端口 Render 平台在托管您的 Flask 应用时，会自动使用标准的 HTTPS 端口（端口 443）来处理安全连接。因此，无需在 URL 中显式指定端口
+      // esp32_ip = data.ip;
+      // console.log("ESP32的 IP 地址:", esp32_ip);
 
-            // 在成功获取 IP 地址后再创建 WebSocket 连接
-            const wsSocket = new WebSocket(`ws://${esp32_ip}:81`);
-            console.log(wsSocket);
+      // 在成功获取 IP 地址后再创建 WebSocket 连接
+      //
+      //const wsSocket = new WebSocket(
+      //  `wss://https://flask-o0hc.onrender.com`
+      //);
+      //console.log(wsSocket);
 
-            wsSocket.onopen = () => console.log("WebSocket 連接已建立");
-            wsSocket.onmessage = (event) =>
-              console.log("来自 WebSocket server 的數據: ", event.data);
-            wsSocket.onerror = (error) =>
-              console.log("WebSocket 出錯: ", error);
-            wsSocket.onclose = () => console.log("WebSocket 連接已關閉");
+      //wsSocket.onopen = () => console.log("WebSocket 連接已建立");
+      //wsSocket.onmessage = (event) =>
+      // console.log("来自 WebSocket server 的數據: ", event.data);
+      //wsSocket.onerror = (error) =>
+      // console.log("WebSocket 出錯: ", error);
+      //.onclose = () => console.log("WebSocket 連接已關閉");
 
-            // 绑定事件监听器，发送 RGB 值
-            setupRGBSliderListeners(wsSocket);
-          })
-          .catch((error) => console.error("無法正確獲取 ESP32 的 IP: ", error));
-      }
+      // 绑定事件监听器，发送 RGB 值
+      //setupRGBSliderListeners(wsSocket);
+      //})
+      //.catch((error) => console.error("無法正確獲取 ESP32 的 IP: ", error));
+      //}
 
       // 定义 RGB 滑块监听器设置函数
       function setupRGBSliderListeners(wsSocket) {
@@ -702,7 +708,7 @@ content %}
       }
 
       // 调用函数以获取 ESP32 的 IP 地址并建立 WebSocket 连接
-      fetchESP32IP();
+      //fetchESP32IP();
     </script>
     {% endblock %}
   </div>

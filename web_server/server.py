@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, request, redirect
 from flask_mqtt import Mqtt
-#from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit
 import json
 import csv
 import os
@@ -9,6 +9,9 @@ import pytz
 
 app = Flask(__name__) 
 tz = pytz.timezone('Asia/Taipei')
+
+#初始化 SocketIO
+socketio = SocketIO(app)
 
 # IP變數
 esp32_ip = None
@@ -69,9 +72,21 @@ def write_to_csv(topic, payload):
         print(f"Error writing to CSV: {str(e)}")
         return False
 
+#WebSocket 連接事件處理
+@socketio.on('connect')
+def handle_websocket_connect():
+    print("WebSocket 客戶端已經連接上💫💫")
+    emit('response', {'message': 'WebSocket 連接成功！'})
+
+# WebSocket 消息處理
+@socketio.on('message')
+def handle_websocket_message(data):
+    print(f"收到 WebSocket 消息: {data}")
+
 # 当连接到 MQTT Broker 时-订阅 MQTT 推播到 Broker 的主题
 @mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
+    socketio.run(app, debug=False, host="0.0.0.0", port=5001)
     print("已經連上mqtt broker")
     mqtt.subscribe("school/esp32/ip")  # 訂閱 IP 主題
     mqtt.subscribe('sui_hsilan/iot_house_esp32/sensor_data')  # 订阅 ESP32 发送的主题
