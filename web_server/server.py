@@ -10,8 +10,8 @@ import pytz
 app = Flask(__name__) 
 tz = pytz.timezone('Asia/Taipei')
 
-#初始化 SocketIO
-socketio = SocketIO(app)
+#初始化 SocketIO指定异步模式为 eventlet
+socketio = SocketIO(app, async_mode='eventlet')
 
 # IP變數
 esp32_ip = None
@@ -86,7 +86,7 @@ def handle_websocket_message(data):
 # 当连接到 MQTT Broker 时-订阅 MQTT 推播到 Broker 的主题
 @mqtt.on_connect()
 def handle_connect(client, userdata, flags, rc):
-    socketio.run(app, debug=False, host="0.0.0.0", port=5001)
+    #socketio.run(app, debug=False, host="0.0.0.0", port=5001)
     print("已經連上mqtt broker")
     mqtt.subscribe("school/esp32/ip")  # 訂閱 IP 主題
     mqtt.subscribe('sui_hsilan/iot_house_esp32/sensor_data')  # 订阅 ESP32 发送的主题
@@ -221,5 +221,5 @@ def get_ip():
     return jsonify({"ip": esp32_ip})
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=5001)
-
+    # app.run(debug=False, host='0.0.0.0', port=5002)
+    pass

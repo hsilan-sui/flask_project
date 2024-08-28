@@ -9,7 +9,7 @@ COPY requirements.txt requirements.txt
 
 # 安装需求
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install gunicorn
+RUN pip install gunicorn eventlet
 
 # 复制 Flask 项目到容器中
 COPY . .
@@ -21,4 +21,4 @@ ENV TZ=Asia/Taipei
 EXPOSE 5001
 
 # 使用 gunicorn 启动 Flask 应用
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "web_server.server:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "-k", "eventlet", "web_server.server:app"]
